@@ -12,8 +12,7 @@ app.post("/register",async(req,res)=>{
 })
 
 
-app.listen(4000,()=>{console.log(`Server is running on ${port}`)
-});
+
 app.post("/login",async(req,res)=>{
 
     try{
@@ -39,3 +38,8 @@ app.post("/login",async(req,res)=>{
         res.status(500).send("invalid Email")
     }
 })
+app.get("/",(req,res)=>{
+    res.send("everthing is work")
+})
+app.listen(4000,()=>{console.log(`Server is running on ${port}`)
+});
