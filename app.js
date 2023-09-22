@@ -5,7 +5,7 @@ const mon = require("mongoose");
 
 const cookieparser= require("cookie-parser");
 // creating a database 
-mon.connect("mongodb://127.0.0.1:27017/swachh").then(()=>{
+mon.connect("mongodb+srv://vishalvasumittal1973:vishalvasumittal1973@cluster0.avinw5c.mongodb.net/?retryWrites=true&w=majority").then(()=>{
     console.log("connection Successful")
 }).catch((error)=>{
     console.log(error);
