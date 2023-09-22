@@ -1,53 +1,133 @@
 const express= require('express')
 const app = express()
 const port =process.env.PORT || 4000;
+const mon = require("mongoose");
 
-const mongoclinet = require('mongodb').MongoClient
- const url ="mongodb+srv://vishalvasumittal1973:vishalvasumittal1973@cluster0.avinw5c.mongodb.net/?retryWrites=true&w=majority"
+const cookieparser= require("cookie-parser");
+// creating a database 
+mon.connect("mongodb://127.0.0.1:27017/swachh").then(()=>{
+    console.log("connection Successful")
+}).catch((error)=>{
+    console.log(error);
+})
+app.use(cookieparser());
+const { error } = require("jquery")
+const mongoose = require("mongoose")
+const bycrpt= require("bcryptjs");
+const jwt = require("jsonwebtoken")
 
- mongoclinet.connect(url,(err,db)=>{
-    if(err){
-        console.log("Error while connecting to db")
+
+const loginSchema=mongoose.Schema({
+
+    
+    email:{
+        type:String,
+        required:true,
+    
+    },
+    password:{
+        type:String,
+        required:true,
+        minLenght:3
+    },
+    tokens:[{
+        token:{
+            type:String,
+            required:true
+        }
+    }]
+   
+
+})
+loginSchema.methods.generateAuthToken = async function(){
+    try{
+        const token = jwt.sign({_id:this._id.toString()},process.env.SECERT_KEY);
+        this.tokens=this.tokens.concat({token:token});
+        await this.save();
+        // console.log(token);
+        return token;
     }
-    else{
-        const mydb =db.db("mydb")
-        const collection= mydb.collection("mytable")
-        app.post('/singup',(res,req)=>{
-            const newuser={
-                name:req.body.name,
-                email:req.body.email,
-                password:req.body.password
-            
-            }
-            const query = {email:newuser.email}
-            collection.findOne(query,(err,result)=>{
-                if(result==null){
-                    collection.insertOne(newuser,(err,result)=>{
-                        res.status(200).send()
-                    })
-                }
-                else{
-                    res.status(400).send()
-                }
-            })
-        })
-        app.post('/login',(res,req)=>{
-            const query = {email:req.body.email,
-                password:req.body.password}
-                collection.findOne(query,(err,result)=>{
-                    if(result!=null){
-                        const obj ={name: result.name,
-                        email:result.email}
-                        res.status(200).send(JSON.stringify(obj))
-                    }
-                    else{
-                        res.status(404).send()
-                    }
-                })
-        })
-
+    catch(err){
+            console.log(err);
     }
- })
+}
+loginSchema.pre("save", async function(next){
+    if(this.isModified("password")){
+        this.password= await bycrpt.hash(this.password,10);
+    next();
+    }
+    
+})
+
+const Login =mongoose.model("Login",loginSchema);
+
+app.post("/register", async(req,res)=>{
+    try{
+        const code = req.body.code;
+        
+        const data =new Login(req.body);
+        console.log(data);
+        const token= await data.generateAuthToken();
+        // console.log(token);
+res.cookie("jwt",token,{
+    expires:new Date(Date.now()+ 600000),
+    httpOnly:true
+});
+        await data.save();
+        
+        res.status(201).send("done");
+
+
+
+  
+      }
+    catch(error){
+        res.status(500).send(error)
+    }
+
+})
+
+
+app.post("/login",async(req,res)=>{
+
+    try{
+        const email= req.body.email;
+        const password = req.body.password;
+        const usermail=await Login.findOne({email:email});
+        
+        const ismatch =  await bycrpt.compare(password,usermail.password);
+        const token= await usermail.generateAuthToken();
+        // console.log(token);
+        res.cookie("jwt",token,{
+            expires:new Date(Date.now()+ 600000),
+            httpOnly:true
+        });
+
+        // console.log(coo);
+
+        if(ismatch){
+            const obj ={name: result.name,
+                email:result.email}
+                res.status(200).send(JSON.stringify(obj))
+        }
+        else{
+            res.status(404).send()
+        }
+    }
+    catch(error){
+        res.status(500).send("invalid Email")
+    }
+})
+app.get("/", (req, res) => {
+  
+    let data = {
+        name: "GFG",
+        age: 18,
+        male: true
+    }
+  
+    res.send(data);
+});
 app.use(express.json)
 
 app.listen(4000,()=>{console.log(`Server is running on ${port}`)
