@@ -1,49 +1,81 @@
-const express= require('express')
-const app = express()
+const express = require("express");
+const app = express();
+const morgan = require("morgan");
 const bycrpt = require("bcryptjs");
-require("./conn.js")
-const Register = require("./Register.js")
-const port =process.env.PORT || 4000;
-app.use(express.json())
-app.post("/register",async(req,res)=>{
-    let register =  await new Register(req.body)
-    const d= await register.save(register)
-    res.send(d)
-})
+const Register = require("./Register.js");
+const port = process.env.PORT || 4000;
+const formidableMiddleware = require("express-formidable");
+const fs = require("fs");
+const photoSchema = require("./photoModel.js");
 
+require("./conn.js");
+app.use(morgan("dev"));
+``;
 
+app.use(express.json());
 
-app.post("/login",async(req,res)=>{
+app.post("/register", async (req, res) => {
+  let register = await new Register(req.body);
+  const d = await register.save(register);
+  res.send(d);
+});
 
-    try{
-        const email= req.body.email;
-        const password = req.body.password;
-        const usermail=await Register.findOne({email:email});
-        
-        const ismatch =  await bycrpt.compare(password,usermail.password);
-       
+app.post("/login", async (req, res) => {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+    const usermail = await Register.findOne({ email: email });
 
-        console.log(ismatch);
+    const ismatch = await bycrpt.compare(password, usermail.password);
 
-        if(ismatch){
-            const obj ={name: usermail.name,
-                email:usermail.email}
-                res.status(200).send(JSON.stringify(obj))
-        }
-        else{
-            res.send("not match");
-        }
+    console.log(ismatch);
+
+    if (ismatch) {
+      const obj = { name: usermail.name, email: usermail.email };
+      res.status(200).send(JSON.stringify(obj));
+    } else {
+      res.send("not match");
     }
-    catch(error){
-        res.status(500).send("invalid Email")
+  } catch (error) {
+    res.status(500).send("invalid Email");
+  }
+});
+//check api temp
+app.get("/fetch", async(req, res) => {
+   const data = await Register.find({});
+   res.send(data);
+});
+
+app.post("/photopost", formidableMiddleware(), async (req, res) => {
+  try {
+    const { name, location } = req.fields;
+    const { photo } = req.files;
+
+    if (!name || !location) {
+      return res.status(404).send({
+        success: false,
+        message: "Fill all the fields",
+      });
     }
-})
-app.get("/fetch", async (req,res)=>{
-    
-        const data = await Register.find({})
-        console.log(data)
-       res.send(data)
-    
-})
-app.listen(4000,()=>{console.log(`Server is running on ${port}`)
+    const product = new photoSchema({ ...req.fields });
+    product.photo.data = fs.readFileSync(photo.path);
+    product.photo.contentType = photo.type;
+
+    await product.save();
+    return res.status(201).json({
+      success: true,
+      message: "Request Accepted",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      error,
+    });
+  }
+});
+
+
+app.listen(4000, () => {
+  console.log(`Server is running on ${port}`);
 });
