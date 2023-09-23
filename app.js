@@ -38,8 +38,12 @@ app.post("/login",async(req,res)=>{
         res.status(500).send("invalid Email")
     }
 })
-app.get("/",(req,res)=>{
-    res.send("everthing is work")
+app.get("/fetch", async (req,res)=>{
+    
+        const data = await Register.find({})
+        console.log(data)
+       res.send(data)
+    
 })
 app.listen(4000,()=>{console.log(`Server is running on ${port}`)
 });
