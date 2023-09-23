@@ -28,6 +28,13 @@ const photoSchema = new mongoose.Schema({
   timeOfComplete: {
     type: Date,
   },
+  userId: {
+    type: mongoose.ObjectId,
+    ref: "register",
+  },
+  supervisorId: {
+    type: String,
+  },
 });
 const PhotoSchema = new mongoose.model("details", photoSchema);
 module.exports = PhotoSchema;

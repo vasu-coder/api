@@ -40,6 +40,7 @@ app.post("/login", async (req, res) => {
     res.status(500).send("invalid Email");
   }
 });
+//check api temp
 app.get("/", (req, res) => {
   res.send("everthing is work");
 });
@@ -75,9 +76,45 @@ app.post("/create-request", formidableMiddleware(), async (req, res) => {
 });
 
 // website Api
-app.get("/problems", async (req, res) => {
+app.get("/Unsolved-problems", async (req, res) => {
   try {
-    const problems = await photoSchema.find({ status: "UnSolved" });
+    const problems = await photoSchema
+      .find({ status: "UnSolved" })
+      .select("-photo");
+    return res.status(201).json({
+      problems,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      message: "Problem in getting Porblems",
+    });
+  }
+});
+app.get("/solved-problems", async (req, res) => {
+  try {
+    const problems = await photoSchema
+      .find({ status: "Solved" })
+      .select("-photo");
+    return res.status(201).json({
+      problems,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      message: "Problem in getting Porblems",
+    });
+  }
+});
+app.get("/Ignored-problems", async (req, res) => {
+  try {
+    const problems = await photoSchema
+      .find({ status: "IgSolved" })
+      .select("-photo");
     return res.status(201).json({
       problems,
       success: true,
@@ -92,7 +129,7 @@ app.get("/problems", async (req, res) => {
 });
 app.get("/All-problems", async (req, res) => {
   try {
-    const problems = await photoSchema.find({});
+    const problems = await photoSchema.find({}).select("-photo");
     return res.status(201).json({
       problems,
       success: true,
@@ -102,6 +139,32 @@ app.get("/All-problems", async (req, res) => {
     res.status(404).send({
       success: false,
       message: "Problem in getting Porblems",
+    });
+  }
+});
+
+app.get("/single-product", async (req, res) => {
+  const problem = await photoSchema.findById(req.params.pid).select("-photo");
+  res.status(201).json({
+    success: true,
+    problem,
+    message: "Problem Detail",
+  });
+});
+
+//To get the Photo
+app.get("/get-photo", async (req, res) => {
+  try {
+    const product = await photoSchema.findById(req.params.pid).select("photo");
+    if (product.photo.data) {
+      res.set("Content-type", product.photo.contentType);
+      return res.status(201).send(product.photo.data);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      error,
     });
   }
 });
