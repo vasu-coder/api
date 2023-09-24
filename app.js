@@ -7,17 +7,20 @@ const port = process.env.PORT || 4000;
 const formidableMiddleware = require("express-formidable");
 const fs = require("fs");
 const photoSchema = require("./photoModel.js");
+const supervisorSchema = require("./supervisorModel.js");
 
 require("./conn.js");
 app.use(morgan("dev"));
-``;
 
 app.use(express.json());
 
 app.post("/register", async (req, res) => {
   let register = await new Register(req.body);
   const d = await register.save(register);
-  res.send(d);
+  res.status(201).send({
+    success: true,
+    d,
+  });
 });
 
 app.post("/login", async (req, res) => {
@@ -25,6 +28,41 @@ app.post("/login", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     const usermail = await Register.findOne({ email: email });
+
+    const ismatch = await bycrpt.compare(password, usermail.password);
+
+    console.log(ismatch);
+
+    if (ismatch) {
+      const obj = { name: usermail.name, email: usermail.email };
+      res.status(200).send({
+        success: true,
+        obj,
+      });
+    } else {
+      res.send("not match");
+    }
+  } catch (error) {
+    res.status(500).send("invalid Email");
+  }
+});
+
+// supervisor registration
+
+app.post("/supervisor-register", async (req, res) => {
+  let detail = await new supervisorSchema(req.body);
+  const d = await detail.save(detail);
+  res.status(201).send({
+    success: true,
+    d,
+  });
+});
+
+app.post("/supervisor-login", async (req, res) => {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+    const usermail = await supervisorSchema.findOne({ email: email });
 
     const ismatch = await bycrpt.compare(password, usermail.password);
 
@@ -40,6 +78,7 @@ app.post("/login", async (req, res) => {
     res.status(500).send("invalid Email");
   }
 });
+
 //check api temp
 app.get("/", (req, res) => {
   res.send("everthing is work");
@@ -143,7 +182,7 @@ app.get("/All-problems", async (req, res) => {
   }
 });
 
-app.get("/single-product", async (req, res) => {
+app.get("/single-product/:pid", async (req, res) => {
   const problem = await photoSchema.findById(req.params.pid).select("-photo");
   res.status(201).json({
     success: true,
@@ -153,7 +192,7 @@ app.get("/single-product", async (req, res) => {
 });
 
 //To get the Photo
-app.get("/get-photo", async (req, res) => {
+app.get("/get-photo/:pid", async (req, res) => {
   try {
     const product = await photoSchema.findById(req.params.pid).select("photo");
     if (product.photo.data) {
@@ -168,6 +207,60 @@ app.get("/get-photo", async (req, res) => {
     });
   }
 });
+
+// get all supervisor
+app.get("/get-Allsupervisor", async (req, res) => {
+  try {
+    const supervisor = await supervisorSchema.find({});
+    res.status(201).json({
+      supervisor,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      error,
+    });
+  }
+});
+
+app.post("/problem-Assigned/:pid/:sid", async (req, res) => {
+  try {
+    const problem = await photoSchema.findById(req.params.pid).select("-photo");
+    problem.status = "Asigned";
+    problem.supervisorId = req.params.sid;
+    await problem.save();
+    res.status(201).json({
+      success: true,
+      problem,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      error,
+    });
+  }
+});
+
+app.get("/get-assigned-problems/:sid", async (req, res) => {
+  try {
+    const porblems = await photoSchema.find({ supervisorId: req.params.sid });
+    res.status(201).send({
+      porblems,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({
+      success: false,
+      error,
+    });
+  }
+});
+
+app.get("/");
 
 app.listen(4000, () => {
   console.log(`Server is running on ${port}`);
