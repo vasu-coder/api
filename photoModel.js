@@ -33,7 +33,8 @@ const photoSchema = new mongoose.Schema({
     ref: "register",
   },
   supervisorId: {
-    type: String,
+    type: mongoose.ObjectId,
+    ref: "supervisorDetail",
   },
 });
 const PhotoSchema = new mongoose.model("details", photoSchema);
