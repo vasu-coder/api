@@ -80,11 +80,12 @@ app.post("/supervisor-login", async (req, res) => {
 });
 
 //check api temp
-app.get("/", (req, res) => {
-  res.send("everthing is work");
+app.get("/fetch", async (req, res) => {
+  const data = await Register.find({});
+  res.send(data);
 });
 
-app.post("/create-request", formidableMiddleware(), async (req, res) => {
+app.post("/photopost", formidableMiddleware(), async (req, res) => {
   try {
     const { name, location } = req.fields;
     const { photo } = req.files;
@@ -95,7 +96,6 @@ app.post("/create-request", formidableMiddleware(), async (req, res) => {
         message: "Fill all the fields",
       });
     }
-
     const product = new photoSchema({ ...req.fields });
     product.photo.data = fs.readFileSync(photo.path);
     product.photo.contentType = photo.type;
@@ -259,8 +259,6 @@ app.get("/get-assigned-problems/:sid", async (req, res) => {
     });
   }
 });
-
-app.get("/");
 
 app.listen(4000, () => {
   console.log(`Server is running on ${port}`);
