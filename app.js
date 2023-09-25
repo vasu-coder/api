@@ -8,10 +8,15 @@ const formidableMiddleware = require("express-formidable");
 const fs = require("fs");
 const photoSchema = require("./photoModel.js");
 const supervisorSchema = require("./supervisorModel.js");
+const cors = require("cors");
+app.use(
+  cors({
+    origin: "localhost:3000",
+  })
+);
 
 require("./conn.js");
 app.use(morgan("dev"));
-
 app.use(express.json());
 
 app.post("/register", async (req, res) => {
@@ -25,7 +30,6 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   try {
-    const email = req.body.email;
     const password = req.body.password;
     const usermail = await Register.findOne({ email: email });
 
@@ -260,6 +264,6 @@ app.get("/get-assigned-problems/:sid", async (req, res) => {
   }
 });
 
-app.listen(4000, () => {
+app.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
