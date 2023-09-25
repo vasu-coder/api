@@ -8,7 +8,12 @@ const formidableMiddleware = require("express-formidable");
 const fs = require("fs");
 const photoSchema = require("./photoModel.js");
 const supervisorSchema = require("./supervisorModel.js");
-
+const cors = require("cors");
+app.use(
+  cors({
+    origin: "localhost:3000",
+  })
+);
 require("./conn.js");
 app.use(morgan("dev"));
 
@@ -259,7 +264,9 @@ app.get("/get-assigned-problems/:sid", async (req, res) => {
     });
   }
 });
-
-app.listen(4000, () => {
+app.get("/",(req, res) => {
+  res.send("everything is working")
+})
+app.listen(port, () => {
   console.log(`Server is running on ${port}`);
 });
