@@ -191,7 +191,8 @@ app.get("/All-problems", async (req, res) => {
 });
 
 app.get("/single-product/:pid", async (req, res) => {
-  const problem = await photoSchema.findById(req.params.pid);
+  const problem = await photoSchema.findById(req.params.pid).select("photo");
+  
   res.status(201).json({
     success: true,
     problem,
@@ -254,7 +255,7 @@ app.post("/problem-Assigned/:pid/:sid", async (req, res) => {
 
 app.get("/get-assigned-problems/:sid", async (req, res) => {
   try {
-    const porblems = await photoSchema.find({ supervisorId: req.params.sid });
+    const porblems = await photoSchema.find({ supervisorId: req.params.sid }).select("-photo");
     res.status(201).send({
       porblems,
       success: true,
