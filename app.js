@@ -13,7 +13,9 @@ const cors = require("cors");
 const { isAsyncFunction } = require("util/types");
 const Guideline = require("./Gudieline.js");
 app.use(
-  cors()
+  cors({
+    origin: "http://localhost:3000",
+  })
 );
 require("./conn.js");
 app.use(morgan("dev"));
