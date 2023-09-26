@@ -8,7 +8,10 @@ const formidableMiddleware = require("express-formidable");
 const fs = require("fs");
 const photoSchema = require("./photoModel.js");
 const supervisorSchema = require("./supervisorModel.js");
+
 const cors = require("cors");
+const { isAsyncFunction } = require("util/types");
+const Guideline = require("./Gudieline.js");
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -264,6 +267,30 @@ app.get("/get-assigned-problems/:sid", async (req, res) => {
     });
   }
 });
+
+app.post("/guideline",async(req,res)=>{
+  try{ const guideline = await new Guideline(req.body)
+    const data = await guideline.save(guideline)
+    res.send(data)}
+    catch (error) {
+      res.status(500).send(error);
+    }
+    
+
+}
+);
+app.get("/get-guideline",async(req,res)=>{
+  try{
+      const guide= req.body.guidelines
+      const headl= req.body.headline
+      const guideline = await Guideline.find({headline:headl,guidelines:guide});
+      res.send(guideline);
+  }
+  catch(error){
+    console.log(error)
+  }
+})
+
 app.get("/",(req, res) => {
   res.send("everything is working")
 })
