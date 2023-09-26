@@ -287,7 +287,7 @@ app.get("/get-guideline",async(req,res)=>{
       res.send(guideline);
   }
   catch(error){
-    console.log(error)
+    res.send(error)
   }
 })
 
