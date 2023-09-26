@@ -7,6 +7,10 @@ const guideline = mongoose.Schema({
     guidelines: {
       type: String,
     },
+    date:{
+      type:Date,
+      default:Date.now
+  }
     
   });
 

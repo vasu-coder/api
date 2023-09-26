@@ -284,7 +284,7 @@ app.get("/get-guideline",async(req,res)=>{
   try{
       const guide= req.body.guidelines
       const headl= req.body.headline
-      const guideline = await Guideline.find({});
+      const guideline = await Guideline.find({}).sort({date:-1});
       res.send(guideline);
   }
   catch(error){
