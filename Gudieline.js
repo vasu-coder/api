@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const moment = require('moment');
+const dateFormat = require('mongoose-date-format');
 const guideline = mongoose.Schema({
     headline: {
       type: String,
@@ -8,11 +10,17 @@ const guideline = mongoose.Schema({
       type: String,
     },
     date:{
-      type:Date,
-      default:Date.now
+      type:String,
+      
+      
+      
   }
     
-  });
+ } 
+
+ );
+
+
 
 const Guideline = mongoose.model("guideline",guideline);
 module.exports = Guideline;

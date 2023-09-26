@@ -8,7 +8,7 @@ const formidableMiddleware = require("express-formidable");
 const fs = require("fs");
 const photoSchema = require("./photoModel.js");
 const supervisorSchema = require("./supervisorModel.js");
-
+const datel = require('date-and-time')
 const cors = require("cors");
 const { isAsyncFunction } = require("util/types");
 const Guideline = require("./Gudieline.js");
@@ -270,7 +270,12 @@ app.get("/get-assigned-problems/:sid", async (req, res) => {
 
 app.post("/guideline",async(req,res)=>{
   try{ 
-    const guideline = await new Guideline(req.body)
+    const guide = req.body.guidelines; // Use query parameters for GET requests
+    const headl = req.body.headline;
+    
+    const now  =  new Date();
+    const value = datel.format(now,'DD/MM/YYYY ');
+    const guideline = await new Guideline({headline:headl,guidelines:guide,date:value})
     const data = await guideline.save(guideline)
     res.send(data)}
     catch (error) {
@@ -282,9 +287,13 @@ app.post("/guideline",async(req,res)=>{
 );
 app.get("/get-guideline",async(req,res)=>{
   try{
-      const guide= req.body.guidelines
-      const headl= req.body.headline
-      const guideline = await Guideline.find({}).sort({date:-1});
+    // const guide = req.query.guidelines; // Use query parameters for GET requests
+    // const headl = req.query.headline;
+    // const date = req.query.date;
+    // const time = moment(date);
+    // const finaldate = time.format('DD/MM/YY HH:mm');
+    const guideline = await Guideline.find({}).sort({ date: -1 });
+
       res.send(guideline);
   }
   catch(error){
