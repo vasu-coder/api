@@ -14,7 +14,7 @@ const { isAsyncFunction } = require("util/types");
 const Guideline = require("./Gudieline.js");
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "*",
   })
 );
 require("./conn.js");
@@ -269,7 +269,8 @@ app.get("/get-assigned-problems/:sid", async (req, res) => {
 });
 
 app.post("/guideline",async(req,res)=>{
-  try{ const guideline = await new Guideline(req.body)
+  try{ 
+    const guideline = await new Guideline(req.body)
     const data = await guideline.save(guideline)
     res.send(data)}
     catch (error) {
